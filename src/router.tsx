@@ -2,7 +2,7 @@ import { Outlet, createRootRoute, createRoute, createRouter } from '@tanstack/re
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import Header from './components/Header'
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider'
-import App from './App'
+import SplashCarousel from './components/SplashCarousel'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -17,7 +17,7 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: App,
+  component: SplashCarousel,
 })
 
 
