@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useKeenSlider } from 'keen-slider/react'
 import 'keen-slider/keen-slider.min.css'
-import SplashScreenPatternFocus from './SplashScreenPatternFocus'
-import SplashScreen from './SplashScreen'
-import SplashScreenElegantUnveil from './SplashScreenElegantUnveil'
+// import SplashScreenPatternFocus from './SplashScreenPatternFocus'
+// import SplashScreen from './SplashScreen'
+// import SplashScreenElegantUnveil from './SplashScreenElegantUnveil'
+import SplashScreenLogoBreath from './SplashScreenLogoBreath'
 
 
 export default function SplashCarousel() {
@@ -13,9 +14,10 @@ export default function SplashCarousel() {
   })
 
   const slides = [
-    SplashScreen,
-    SplashScreenElegantUnveil,
-    SplashScreenPatternFocus,
+    SplashScreenLogoBreath,
+    // SplashScreen,
+    // SplashScreenElegantUnveil,
+    // SplashScreenPatternFocus,
   ]
 
   // Track current slide index for animation restart
@@ -49,7 +51,7 @@ export default function SplashCarousel() {
           </div>
         ))}
       </div>
-      <button
+      {/* <button
         className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 shadow hover:bg-opacity-100 transition z-50"
         onClick={() => {
           slider.current?.prev()
@@ -68,7 +70,7 @@ export default function SplashCarousel() {
         aria-label="Next Slide"
       >
         &#8594;
-      </button>
+      </button> */}
     </div>
   )
 }
