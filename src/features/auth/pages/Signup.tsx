@@ -1,11 +1,25 @@
+import { useState } from "react"
+import { useNavigate } from "@tanstack/react-router"
 import AuthInput from "../components/AuthInput"
 import AuthButton from "../components/AuthButton"
 import AuthCard from "../components/AuthCard"
+import { storage } from "../../../lib/storage"
 
 export default function Signup() {
+  const navigate = useNavigate()
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    storage.setUser({ name, email })
+    navigate({ to: "/" })
+  }
+
   return (
     <div className="min-h-screen flex flex-col justify-center bg-[#e7cfc9] px-4 sm:px-6">
-      
+
       {/* LOGO */}
       <div className="w-full max-w-5xl mx-auto mb-4 flex items-center gap-2 font-bold mt-6 sm:mt-10">
         <img src="/logo-purple.png" alt="peculiar logo" className="h-6" />
@@ -14,10 +28,10 @@ export default function Signup() {
 
       {/* MAIN */}
       <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 mt-6 sm:mt-10 mb-10">
-        
+
         {/* LEFT */}
         <div className="flex-1 flex flex-col items-center">
-          
+
           <AuthCard>
             <h1 className="text-2xl sm:text-3xl font-bold text-center mb-2">
               Get Started
@@ -26,10 +40,24 @@ export default function Signup() {
               Turn your event dreams into a seamless reality.
             </p>
 
-            <form className="space-y-4">
-              <AuthInput placeholder="Full Name" />
-              <AuthInput type="email" placeholder="Email Address" />
-              <AuthInput type="password" placeholder="Password" />
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <AuthInput
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <AuthInput
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <AuthInput
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
 
               <AuthButton>Sign Up</AuthButton>
             </form>

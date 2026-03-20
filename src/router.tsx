@@ -3,13 +3,14 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  redirect,
+  useRouterState,
 } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import Header from './components/Header'
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider'
 import SplashCarousel from './components/SplashCarousel'
 import Signup from './features/auth/pages/Signup'
-import { useRouterState } from '@tanstack/react-router'
+import { storage } from './lib/storage'
 
 // Root Route
 const rootRoute = createRootRoute({
@@ -30,17 +31,27 @@ const rootRoute = createRootRoute({
   },
 })
 
-// Home Route
+// Home Route — requires authentication
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
+  beforeLoad: () => {
+    if (!storage.isAuthenticated()) {
+      throw redirect({ to: '/signup' })
+    }
+  },
   component: SplashCarousel,
 })
 
-// ✅ Login Route
+// ✅ Signup Route — only for unauthenticated users
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/signup',
+  beforeLoad: () => {
+    if (storage.isAuthenticated()) {
+      throw redirect({ to: '/' })
+    }
+  },
   component: Signup,
 })
 

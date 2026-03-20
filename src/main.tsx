@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 
-import { createRoute, RouterProvider } from '@tanstack/react-router'
+import { RouterProvider } from '@tanstack/react-router'
 import { router, TanStackQueryProviderContext } from './router'
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider'
 
