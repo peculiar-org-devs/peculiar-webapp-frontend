@@ -1,15 +1,12 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 
-import { RouterProvider } from '@tanstack/react-router'
+import { createRoute, RouterProvider } from '@tanstack/react-router'
 import { router, TanStackQueryProviderContext } from './router'
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider'
 
 import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
-
-
-
 
 const rootElement = document.getElementById('app')
 if (rootElement && !rootElement.innerHTML) {
@@ -27,3 +24,6 @@ if (rootElement && !rootElement.innerHTML) {
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals()
+
+
+
