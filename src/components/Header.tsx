@@ -1,10 +1,17 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 
 import { useState } from 'react'
-import { Home, Menu, X } from 'lucide-react'
+import { Home, LogOut, Menu, X } from 'lucide-react'
+import { storage } from '../lib/storage'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    storage.clearUser()
+    navigate({ to: '/signup' })
+  }
 
   return (
     <>
@@ -16,7 +23,7 @@ export default function Header() {
         >
           <Menu size={24} />
         </button>
-        <h1 className="ml-4 text-xl font-semibold">
+        <h1 className="ml-4 text-xl font-semibold flex-1">
           <Link to="/">
             <img
               src="/tanstack-word-logo-white.svg"
@@ -25,6 +32,14 @@ export default function Header() {
             />
           </Link>
         </h1>
+        <button
+          onClick={handleLogout}
+          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+          aria-label="Log out"
+          title="Log out"
+        >
+          <LogOut size={20} />
+        </button>
       </header>
 
       <aside
