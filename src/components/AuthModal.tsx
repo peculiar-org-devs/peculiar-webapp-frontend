@@ -16,14 +16,68 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     password: ''
   });
 
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrorMsg('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to backend authentication endpoint
-    console.log(isLogin ? 'Logging in...' : 'Registering...', formData);
+    setLoading(true);
+    setErrorMsg('');
+
+    try {
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const body = isLogin 
+        ? { email: formData.email, password: formData.password }
+        : { 
+            email: formData.email, 
+            password: formData.password, 
+            firstName: formData.firstName, 
+            lastName: formData.lastName, 
+            phone: '0000000000' // Stub requirement for backend
+          };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+
+      if (isLogin) {
+        // Assume data returns { accessToken, user: { id, email, role, ... } }
+        import('../lib/storage').then(({ storage }) => {
+          storage.setUser({
+            id: data.user.id,
+            name: `${data.user.firstName || ''} ${data.user.lastName || ''}`.trim() || data.user.email,
+            email: data.user.email,
+            role: data.user.role,
+            token: data.accessToken
+          });
+          window.location.reload();
+        });
+      } else {
+        // Registration successful
+        // The backend might ask for email verification, show message or switch to login
+        setIsLogin(true);
+        setErrorMsg('Registration successful! Please log in (check email for verification).');
+      }
+    } catch (error: any) {
+      setErrorMsg(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleAuth = () => {
@@ -160,12 +214,27 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   )}
                 </div>
 
+                {errorMsg && (
+                  <p className="text-sm text-red-500 bg-red-50 p-2 rounded-md font-medium">
+                    {errorMsg}
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 text-white font-medium rounded-xl shadow-md transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 mt-2"
+                  disabled={loading}
+                  className="w-full py-3 px-4 text-white font-medium rounded-xl shadow-md transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 mt-2 disabled:opacity-70 flex justify-center items-center"
                   style={{ backgroundColor: '#3A2256' }}
                 >
-                  {isLogin ? 'Sign In' : 'Create Account'}
+                  {loading ? (
+                    <motion.div 
+                      animate={{ rotate: 360 }} 
+                      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                      className="w-5 h-5 border-2 border-white rounded-full border-t-transparent"
+                    />
+                  ) : (
+                    isLogin ? 'Sign In' : 'Create Account'
+                  )}
                 </button>
               </form>
 

@@ -13,7 +13,7 @@ export default function Signup() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    storage.setUser({ name, email })
+    storage.setUser({ id: '0', role: 'CLIENT', token: 'stub', name, email })
     navigate({ to: "/" })
   }
 

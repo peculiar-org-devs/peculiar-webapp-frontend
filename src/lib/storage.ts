@@ -1,8 +1,11 @@
 const AUTH_KEY = 'peculiar_auth_user'
 
 export type AuthUser = {
+  id: string
   name: string
   email: string
+  role: string
+  token: string
 }
 
 export const storage = {
