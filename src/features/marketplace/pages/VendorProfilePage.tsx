@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Star, CheckCircle, MapPin, ArrowLeft, Calendar, MessageCircle } from 'lucide-react';
 import { api } from '../../../lib/api';
+import { storage } from '../../../lib/storage';
+import BookingForm from '../../bookings/components/BookingForm';
 
 interface VendorProfile {
   id: string;
@@ -20,6 +22,7 @@ export default function VendorProfilePage({ vendorId }: { vendorId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showBooking, setShowBooking] = useState(false);
 
   useEffect(() => {
     api
@@ -118,6 +121,10 @@ export default function VendorProfilePage({ vendorId }: { vendorId: string }) {
 
               <div className="flex gap-2">
                 <button
+                  onClick={() => {
+                    if (!storage.isAuthenticated()) { window.location.href = '/signup'; return; }
+                    setShowBooking(true);
+                  }}
                   className="px-6 py-2.5 rounded-full font-semibold text-white shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
                   style={{ backgroundColor: '#3A2256' }}
                 >
@@ -193,6 +200,10 @@ export default function VendorProfilePage({ vendorId }: { vendorId: string }) {
             <p className="text-xs text-gray-400 mb-6">Starting price per event</p>
 
             <button
+              onClick={() => {
+                if (!storage.isAuthenticated()) { window.location.href = '/signup'; return; }
+                setShowBooking(true);
+              }}
               className="w-full py-3 rounded-xl font-semibold text-white shadow-md hover:shadow-lg transition-all active:scale-95"
               style={{ backgroundColor: '#3A2256' }}
             >
@@ -239,6 +250,35 @@ export default function VendorProfilePage({ vendorId }: { vendorId: string }) {
           />
         </motion.div>
       )}
+      {/* Booking Modal */}
+      <AnimatePresence>
+        {showBooking && vendor && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowBooking(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              transition={{ type: 'spring', bounce: 0.25 }}
+              className="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl z-10 p-6 max-h-[90vh] overflow-y-auto"
+            >
+              <BookingForm
+                vendorId={vendor.id}
+                vendorName={vendor.businessName}
+                vendorBasePrice={vendor.basePrice}
+                onSuccess={() => { window.location.href = '/bookings'; }}
+                onCancel={() => setShowBooking(false)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

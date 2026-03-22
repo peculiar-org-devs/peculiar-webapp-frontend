@@ -14,6 +14,7 @@ import VendorOnboarding from './features/vendors/pages/VendorOnboarding'
 import VendorDashboard from './features/vendors/pages/VendorDashboard'
 import Marketplace from './features/marketplace/pages/Marketplace'
 import VendorProfilePage from './features/marketplace/pages/VendorProfilePage'
+import MyBookings from './features/bookings/pages/MyBookings'
 import { storage } from './lib/storage'
 
 // Root Route
@@ -100,6 +101,18 @@ const vendorProfileRoute = createRoute({
   },
 })
 
+// Bookings — requires authentication
+const bookingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/bookings',
+  beforeLoad: () => {
+    if (!storage.isAuthenticated()) {
+      throw redirect({ to: '/signup' })
+    }
+  },
+  component: MyBookings,
+})
+
 // ✅ Route Tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -108,6 +121,7 @@ const routeTree = rootRoute.addChildren([
   vendorDashboardRoute,
   marketplaceRoute,
   vendorProfileRoute,
+  bookingsRoute,
 ])
 
 // React Query Context

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { Home, LogOut, Menu, X, Search, Store } from 'lucide-react'
+import { Home, LogOut, Menu, X, Search, Store, Calendar } from 'lucide-react'
 import { storage } from '../lib/storage'
 import AuthModal from './AuthModal'
 
@@ -135,18 +135,32 @@ export default function Header() {
             <span>Marketplace</span>
           </Link>
           {isLoggedIn && (
-            <Link
-              to="/vendor/dashboard"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors mb-2 text-gray-700"
-              activeProps={{
-                className: 'flex items-center gap-3 p-3 rounded-xl shadow-sm transition-colors mb-2 font-medium',
-                style: { backgroundColor: '#F7E6CA', color: '#3A2256' }
-              }}
-            >
-              <Store size={20} />
-              <span>Vendor Dashboard</span>
-            </Link>
+            <>
+              <Link
+                to="/vendor/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors mb-2 text-gray-700"
+                activeProps={{
+                  className: 'flex items-center gap-3 p-3 rounded-xl shadow-sm transition-colors mb-2 font-medium',
+                  style: { backgroundColor: '#F7E6CA', color: '#3A2256' }
+                }}
+              >
+                <Store size={20} />
+                <span>Vendor Dashboard</span>
+              </Link>
+              <Link
+                to="/bookings"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors mb-2 text-gray-700"
+                activeProps={{
+                  className: 'flex items-center gap-3 p-3 rounded-xl shadow-sm transition-colors mb-2 font-medium',
+                  style: { backgroundColor: '#F7E6CA', color: '#3A2256' }
+                }}
+              >
+                <Calendar size={20} />
+                <span>My Bookings</span>
+              </Link>
+            </>
           )}
         </nav>
       </aside>
