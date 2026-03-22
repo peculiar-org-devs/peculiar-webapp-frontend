@@ -12,6 +12,8 @@ import SplashCarousel from './components/SplashCarousel'
 import Signup from './features/auth/pages/Signup'
 import VendorOnboarding from './features/vendors/pages/VendorOnboarding'
 import VendorDashboard from './features/vendors/pages/VendorDashboard'
+import Marketplace from './features/marketplace/pages/Marketplace'
+import VendorProfilePage from './features/marketplace/pages/VendorProfilePage'
 import { storage } from './lib/storage'
 
 // Root Route
@@ -81,8 +83,32 @@ const vendorDashboardRoute = createRoute({
   component: VendorDashboard,
 })
 
+// Marketplace — public route
+const marketplaceRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/marketplace',
+  component: Marketplace,
+})
+
+// Vendor Public Profile — public route with dynamic param
+const vendorProfileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/vendors/$vendorId',
+  component: () => {
+    const { vendorId } = vendorProfileRoute.useParams()
+    return <VendorProfilePage vendorId={vendorId} />
+  },
+})
+
 // ✅ Route Tree
-const routeTree = rootRoute.addChildren([indexRoute, loginRoute, vendorOnboardingRoute, vendorDashboardRoute])
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  loginRoute,
+  vendorOnboardingRoute,
+  vendorDashboardRoute,
+  marketplaceRoute,
+  vendorProfileRoute,
+])
 
 // React Query Context
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()

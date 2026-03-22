@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { Home, LogOut, Menu, X } from 'lucide-react'
+import { Home, LogOut, Menu, X, Search, Store } from 'lucide-react'
 import { storage } from '../lib/storage'
 import AuthModal from './AuthModal'
 
@@ -50,7 +50,15 @@ export default function Header() {
           </h1>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/marketplace"
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium hover:opacity-80 transition-opacity"
+            style={{ color: '#3A2256' }}
+          >
+            <Search size={16} />
+            Marketplace
+          </Link>
           {isLoggedIn ? (
             <button
               onClick={handleLogout}
@@ -114,6 +122,32 @@ export default function Header() {
             <Home size={20} />
             <span>Home</span>
           </Link>
+          <Link
+            to="/marketplace"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors mb-2 text-gray-700"
+            activeProps={{
+              className: 'flex items-center gap-3 p-3 rounded-xl shadow-sm transition-colors mb-2 font-medium',
+              style: { backgroundColor: '#F7E6CA', color: '#3A2256' }
+            }}
+          >
+            <Search size={20} />
+            <span>Marketplace</span>
+          </Link>
+          {isLoggedIn && (
+            <Link
+              to="/vendor/dashboard"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors mb-2 text-gray-700"
+              activeProps={{
+                className: 'flex items-center gap-3 p-3 rounded-xl shadow-sm transition-colors mb-2 font-medium',
+                style: { backgroundColor: '#F7E6CA', color: '#3A2256' }
+              }}
+            >
+              <Store size={20} />
+              <span>Vendor Dashboard</span>
+            </Link>
+          )}
         </nav>
       </aside>
     </>
