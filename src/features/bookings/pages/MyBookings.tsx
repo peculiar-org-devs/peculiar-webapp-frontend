@@ -23,17 +23,42 @@ const statusConfig: Record<string, { color: string; bg: string; icon: typeof Che
   CANCELLED: { color: '#6B7280', bg: '#F3F4F6', icon: AlertCircle, label: 'Cancelled' },
 };
 
-export default function MyBookings() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+interface BookingGroups {
+  asOrganizer: Booking[];
+  asVendor: Booking[];
+}
 
-  useEffect(() => {
+export default function MyBookings() {
+  const [bookingGroups, setBookingGroups] = useState<BookingGroups>({ asOrganizer: [], asVendor: [] });
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'client' | 'vendor'>('client');
+
+  const fetchBookings = () => {
+    setLoading(true);
     api
-      .get<Booking[]>('/bookings/my')
-      .then(setBookings)
+      .get<BookingGroups>('/bookings/my')
+      .then((data) => {
+        setBookingGroups(data);
+        if (data.asVendor.length > 0 && data.asOrganizer.length === 0) {
+          setActiveTab('vendor');
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchBookings();
   }, []);
+
+  const handleUpdateStatus = async (bookingId: string, status: string) => {
+    try {
+      await api.put(`/bookings/${bookingId}/status`, { status });
+      fetchBookings();
+    } catch (err: any) {
+      alert(err.message || 'Action failed');
+    }
+  };
 
   const handlePay = async (bookingId: string, amount: number) => {
     try {
@@ -41,7 +66,6 @@ export default function MyBookings() {
         bookingId,
         amount,
       });
-      // Redirect to Paystack checkout
       if (result.authorization_url) {
         window.location.href = result.authorization_url;
       }
@@ -63,6 +87,9 @@ export default function MyBookings() {
     );
   }
 
+  const currentBookings = activeTab === 'client' ? bookingGroups.asOrganizer : bookingGroups.asVendor;
+  const hasMultipleRoles = bookingGroups.asVendor.length > 0;
+
   return (
     <div className="min-h-screen bg-gray-50 font-satoshi">
       {/* Header */}
@@ -79,34 +106,64 @@ export default function MyBookings() {
           <p className="text-sm opacity-70 mt-1" style={{ color: '#3A2256' }}>
             Track your event vendor bookings and payments.
           </p>
+
+          {/* Role Tabs */}
+          {hasMultipleRoles && (
+            <div className="flex gap-4 mt-8">
+              <button
+                onClick={() => setActiveTab('client')}
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                  activeTab === 'client'
+                    ? 'bg-[#3A2256] text-white shadow-lg'
+                    : 'text-[#3A2256] hover:bg-white/50'
+                }`}
+              >
+                As Client
+              </button>
+              <button
+                onClick={() => setActiveTab('vendor')}
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                  activeTab === 'vendor'
+                    ? 'bg-[#3A2256] text-white shadow-lg'
+                    : 'text-[#3A2256] hover:bg-white/50'
+                }`}
+              >
+                As Vendor
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Bookings List */}
       <div className="max-w-3xl mx-auto px-4 py-8">
-        {bookings.length === 0 ? (
+        {currentBookings.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="py-20 text-center"
           >
             <Calendar size={48} className="mx-auto mb-4 text-gray-200" />
-            <h3 className="text-lg font-bold text-gray-500 mb-1">No bookings yet</h3>
+            <h3 className="text-lg font-bold text-gray-500 mb-1">No {activeTab === 'vendor' ? 'requests' : 'bookings'} yet</h3>
             <p className="text-sm text-gray-400 mb-6">
-              Browse the marketplace to find and book your perfect vendor.
+              {activeTab === 'vendor' 
+                ? 'Your service requests will appear here once clients book you.' 
+                : 'Browse the marketplace to find and book your perfect vendor.'}
             </p>
-            <a
-              href="/marketplace"
-              className="inline-block px-6 py-3 rounded-full font-semibold text-white shadow-md transition-all"
-              style={{ backgroundColor: '#3A2256' }}
-            >
-              Explore Marketplace
-            </a>
+            {activeTab === 'client' && (
+              <a
+                href="/marketplace"
+                className="inline-block px-6 py-3 rounded-full font-semibold text-white shadow-md transition-all"
+                style={{ backgroundColor: '#3A2256' }}
+              >
+                Explore Marketplace
+              </a>
+            )}
           </motion.div>
         ) : (
           <div className="flex flex-col gap-4">
             <AnimatePresence>
-              {bookings.map((booking, i) => {
+              {currentBookings.map((booking, i) => {
                 const config = statusConfig[booking.status] || statusConfig.PENDING;
                 const StatusIcon = config.icon;
 
@@ -123,7 +180,7 @@ export default function MyBookings() {
                         <div>
                           <h3 className="font-bold text-gray-800">{booking.event?.title || 'Untitled Event'}</h3>
                           <p className="text-xs text-gray-400 mt-0.5">
-                            {booking.vendor?.businessName} • {booking.event?.locationName || 'TBD'}
+                            {activeTab === 'client' ? booking.vendor?.businessName : 'Requested by client'} • {booking.event?.locationName || 'TBD'}
                           </p>
                         </div>
                         <span
@@ -135,7 +192,7 @@ export default function MyBookings() {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                         <span className="flex items-center gap-1">
                           <Calendar size={14} />
                           {booking.event?.startDate
@@ -150,8 +207,8 @@ export default function MyBookings() {
                         </span>
                       </div>
 
-                      {/* Pay Deposit CTA */}
-                      {booking.status === 'APPROVED' && !booking.isDepositPaid && (
+                      {/* CLIENT ACTIONS */}
+                      {activeTab === 'client' && booking.status === 'APPROVED' && !booking.isDepositPaid && (
                         <button
                           onClick={() => handlePay(booking.id, Number(booking.depositAmount))}
                           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-white shadow-sm transition-all active:scale-95 text-sm"
@@ -161,6 +218,24 @@ export default function MyBookings() {
                           Pay Deposit — ₦{Number(booking.depositAmount).toLocaleString()}
                           <ChevronRight size={14} />
                         </button>
+                      )}
+
+                      {/* VENDOR ACTIONS */}
+                      {activeTab === 'vendor' && booking.status === 'PENDING' && (
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => handleUpdateStatus(booking.id, 'APPROVED')}
+                            className="flex-1 py-2.5 rounded-xl font-semibold text-white shadow-sm transition-all active:scale-95 text-sm bg-green-600 hover:bg-green-700"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStatus(booking.id, 'REJECTED')}
+                            className="flex-1 py-2.5 rounded-xl font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-all active:scale-95 text-sm"
+                          >
+                            Reject
+                          </button>
+                        </div>
                       )}
                     </div>
                   </motion.div>
