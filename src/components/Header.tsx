@@ -1,6 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { Home, LogOut, Menu, X, Search, Store, Calendar } from 'lucide-react'
+import { Home, LogOut, Menu, X, Search, Store, Calendar, User, FileText } from 'lucide-react'
 import { storage } from '../lib/storage'
 import AuthModal from './AuthModal'
 
@@ -159,6 +159,30 @@ export default function Header() {
               >
                 <Calendar size={20} />
                 <span>My Bookings</span>
+              </Link>
+              <Link
+                to="/events"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors mb-2 text-gray-700"
+                activeProps={{
+                  className: 'flex items-center gap-3 p-3 rounded-xl shadow-sm transition-colors mb-2 font-medium',
+                  style: { backgroundColor: '#F7E6CA', color: '#3A2256' }
+                }}
+              >
+                <FileText size={20} />
+                <span>My Events</span>
+              </Link>
+              <Link
+                to="/profile/edit"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors mb-2 text-gray-700"
+                activeProps={{
+                  className: 'flex items-center gap-3 p-3 rounded-xl shadow-sm transition-colors mb-2 font-medium',
+                  style: { backgroundColor: '#F7E6CA', color: '#3A2256' }
+                }}
+              >
+                <User size={20} />
+                <span>Edit Profile</span>
               </Link>
             </>
           )}
