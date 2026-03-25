@@ -28,6 +28,10 @@ export default function Marketplace() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 20;
 
   // Load categories once
   useEffect(() => {
@@ -39,15 +43,19 @@ export default function Marketplace() {
     setLoading(true);
     const fetchVendors = async () => {
       try {
-        let data: Vendor[];
+        let response: any;
         if (searchQuery.trim()) {
-          data = await api.get<Vendor[]>(`/vendors/search?q=${encodeURIComponent(searchQuery)}`);
+          response = await api.get<any>(`/vendors/search?q=${encodeURIComponent(searchQuery)}&page=${page}&limit=${limit}`);
         } else if (selectedCategory) {
-          data = await api.get<Vendor[]>(`/vendors?categoryId=${selectedCategory}`);
+          response = await api.get<any>(`/vendors?categoryId=${selectedCategory}&page=${page}&limit=${limit}`);
         } else {
-          data = await api.get<Vendor[]>('/vendors');
+          response = await api.get<any>(`/vendors?page=${page}&limit=${limit}`);
         }
-        setVendors(data);
+        setVendors(response.data || response);
+        if (response.meta) {
+          setTotalPages(response.meta.totalPages);
+          setTotal(response.meta.total);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -57,11 +65,12 @@ export default function Marketplace() {
 
     const debounce = setTimeout(fetchVendors, 300);
     return () => clearTimeout(debounce);
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, page]);
 
   const clearFilters = () => {
     setSearchQuery('');
     setSelectedCategory('');
+    setPage(1);
   };
 
   const hasFilters = searchQuery || selectedCategory;
@@ -203,7 +212,7 @@ export default function Marketplace() {
         ) : (
           <>
             <p className="text-sm text-gray-400 mb-4">
-              <span className="font-bold text-gray-600">{vendors.length}</span> vendor{vendors.length !== 1 ? 's' : ''} found
+              <span className="font-bold text-gray-600">{total}</span> vendor{total !== 1 ? 's' : ''} found
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {vendors.map((v, i) => (
@@ -217,6 +226,29 @@ export default function Marketplace() {
                 </motion.div>
               ))}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-gray-600">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>

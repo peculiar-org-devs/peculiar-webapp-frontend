@@ -42,7 +42,9 @@ export default function BookingForm({
     api.get<EventType[]>('/event-types').then(setEventTypes).catch(console.error);
   }, []);
 
-  const depositAmount = Math.round(totalPrice * 0.32);
+  const depositAmount = Math.round(totalPrice * 0.30);
+  const platformFee = Math.round(totalPrice * 0.02);
+  const totalDueNow = depositAmount + platformFee;
 
   const handleEventChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setEventData({ ...eventData, [e.target.name]: e.target.value });
@@ -234,7 +236,7 @@ export default function BookingForm({
             </div>
             <div className="border-t pt-3 flex justify-between text-sm">
               <span className="font-bold" style={{ color: '#3A2256' }}>You pay now</span>
-              <span className="font-bold text-lg" style={{ color: '#3A2256' }}>₦{depositAmount.toLocaleString()}</span>
+              <span className="font-bold text-lg" style={{ color: '#3A2256' }}>₦{totalDueNow.toLocaleString()}</span>
             </div>
           </div>
 

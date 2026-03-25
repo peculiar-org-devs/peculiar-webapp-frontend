@@ -272,7 +272,7 @@ export default function VendorProfilePage({ vendorId }: { vendorId: string }) {
                 vendorId={vendor.id}
                 vendorName={vendor.businessName}
                 vendorBasePrice={vendor.basePrice}
-                onSuccess={() => { window.location.href = '/bookings'; }}
+                onSuccess={(_bookingId) => { window.location.href = '/bookings'; }}
                 onCancel={() => setShowBooking(false)}
               />
             </motion.div>

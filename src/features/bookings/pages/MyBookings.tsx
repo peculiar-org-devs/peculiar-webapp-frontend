@@ -32,13 +32,28 @@ export default function MyBookings() {
   const [bookingGroups, setBookingGroups] = useState<BookingGroups>({ asOrganizer: [], asVendor: [] });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'client' | 'vendor'>('client');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState({ client: 1, vendor: 1 });
+  const [total, setTotal] = useState({ client: 0, vendor: 0 });
+  const limit = 20;
 
   const fetchBookings = () => {
     setLoading(true);
     api
-      .get<BookingGroups>('/bookings/my')
+      .get<any>(`/bookings/my?page=${page}&limit=${limit}`)
       .then((data) => {
-        setBookingGroups(data);
+        setBookingGroups({
+          asOrganizer: data.asOrganizer.data || data.asOrganizer,
+          asVendor: data.asVendor.data || data.asVendor,
+        });
+        if (data.asOrganizer.meta) {
+          setTotalPages(prev => ({ ...prev, client: data.asOrganizer.meta.totalPages }));
+          setTotal(prev => ({ ...prev, client: data.asOrganizer.meta.total }));
+        }
+        if (data.asVendor.meta) {
+          setTotalPages(prev => ({ ...prev, vendor: data.asVendor.meta.totalPages }));
+          setTotal(prev => ({ ...prev, vendor: data.asVendor.meta.total }));
+        }
         if (data.asVendor.length > 0 && data.asOrganizer.length === 0) {
           setActiveTab('vendor');
         }
@@ -49,7 +64,7 @@ export default function MyBookings() {
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [page]);
 
   const handleUpdateStatus = async (bookingId: string, status: string) => {
     try {
@@ -89,6 +104,8 @@ export default function MyBookings() {
 
   const currentBookings = activeTab === 'client' ? bookingGroups.asOrganizer : bookingGroups.asVendor;
   const hasMultipleRoles = bookingGroups.asVendor.length > 0;
+  const currentTotalPages = activeTab === 'client' ? totalPages.client : totalPages.vendor;
+  const currentTotal = activeTab === 'client' ? total.client : total.vendor;
 
   return (
     <div className="min-h-screen bg-gray-50 font-satoshi">
@@ -111,7 +128,7 @@ export default function MyBookings() {
           {hasMultipleRoles && (
             <div className="flex gap-4 mt-8">
               <button
-                onClick={() => setActiveTab('client')}
+                onClick={() => { setActiveTab('client'); setPage(1); }}
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
                   activeTab === 'client'
                     ? 'bg-[#3A2256] text-white shadow-lg'
@@ -121,7 +138,7 @@ export default function MyBookings() {
                 As Client
               </button>
               <button
-                onClick={() => setActiveTab('vendor')}
+                onClick={() => { setActiveTab('vendor'); setPage(1); }}
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
                   activeTab === 'vendor'
                     ? 'bg-[#3A2256] text-white shadow-lg'
@@ -161,9 +178,10 @@ export default function MyBookings() {
             )}
           </motion.div>
         ) : (
-          <div className="flex flex-col gap-4">
-            <AnimatePresence>
-              {currentBookings.map((booking, i) => {
+          <>
+            <div className="flex flex-col gap-4">
+              <AnimatePresence>
+                {currentBookings.map((booking, i) => {
                 const config = statusConfig[booking.status] || statusConfig.PENDING;
                 const StatusIcon = config.icon;
 
@@ -243,6 +261,30 @@ export default function MyBookings() {
               })}
             </AnimatePresence>
           </div>
+
+          {/* Pagination */}
+          {currentTotalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {page} of {currentTotalPages} ({currentTotal} total)
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(currentTotalPages, p + 1))}
+                disabled={page === currentTotalPages}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
         )}
       </div>
     </div>

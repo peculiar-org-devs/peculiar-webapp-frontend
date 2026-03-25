@@ -56,14 +56,14 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       }
 
       if (isLogin) {
-        // Assume data returns { accessToken, user: { id, email, role, ... } }
         import('../lib/storage').then(({ storage }) => {
           storage.setUser({
             id: data.user.id,
             name: `${data.user.firstName || ''} ${data.user.lastName || ''}`.trim() || data.user.email,
             email: data.user.email,
             role: data.user.role,
-            token: data.accessToken
+            token: data.accessToken,
+            refreshToken: data.refreshToken,
           });
           window.location.reload();
         });
@@ -81,7 +81,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   };
 
   const handleGoogleAuth = () => {
-    window.location.href = 'http://localhost:3000/api/auth/google'; // Adjust according to environment
+    const apiBase = import.meta.env.VITE_API_URL || '';
+    window.location.href = `${apiBase}/api/auth/google`;
   };
 
   return (

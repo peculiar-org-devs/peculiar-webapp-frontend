@@ -15,6 +15,8 @@ import VendorDashboard from './features/vendors/pages/VendorDashboard'
 import Marketplace from './features/marketplace/pages/Marketplace'
 import VendorProfilePage from './features/marketplace/pages/VendorProfilePage'
 import MyBookings from './features/bookings/pages/MyBookings'
+import MyEvents from './features/events/pages/MyEvents'
+import ProfileEdit from './features/profile/pages/ProfileEdit'
 import { storage } from './lib/storage'
 
 // Root Route
@@ -113,6 +115,30 @@ const bookingsRoute = createRoute({
   component: MyBookings,
 })
 
+// My Events — requires authentication
+const myEventsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/events',
+  beforeLoad: () => {
+    if (!storage.isAuthenticated()) {
+      throw redirect({ to: '/signup' })
+    }
+  },
+  component: MyEvents,
+})
+
+// Profile Edit — requires authentication
+const profileEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile/edit',
+  beforeLoad: () => {
+    if (!storage.isAuthenticated()) {
+      throw redirect({ to: '/signup' })
+    }
+  },
+  component: ProfileEdit,
+})
+
 // ✅ Route Tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -122,6 +148,8 @@ const routeTree = rootRoute.addChildren([
   marketplaceRoute,
   vendorProfileRoute,
   bookingsRoute,
+  myEventsRoute,
+  profileEditRoute,
 ])
 
 // React Query Context

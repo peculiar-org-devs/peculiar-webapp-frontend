@@ -4,7 +4,8 @@ const API_BASE = '/api';
 
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  retry = true,
 ): Promise<T> {
   const user = storage.getUser();
   const headers: Record<string, string> = {
@@ -20,6 +21,25 @@ async function request<T>(
     ...options,
     headers,
   });
+
+  // Token expired — attempt one silent refresh then retry
+  if (res.status === 401 && retry && user?.refreshToken) {
+    const refreshRes = await fetch(`${API_BASE}/auth/refresh-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: user.refreshToken }),
+    });
+
+    if (refreshRes.ok) {
+      const { accessToken } = await refreshRes.json();
+      storage.setUser({ ...user, token: accessToken });
+      return request<T>(endpoint, options, false);
+    } else {
+      storage.clearUser();
+      window.location.href = '/signup';
+      throw new Error('Session expired. Please sign in again.');
+    }
+  }
 
   const data = await res.json();
 

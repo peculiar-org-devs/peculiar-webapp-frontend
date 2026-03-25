@@ -7,14 +7,96 @@ import { storage } from "../../../lib/storage"
 
 export default function Signup() {
   const navigate = useNavigate()
-  const [name, setName] = useState("")
+  const [isLogin, setIsLogin] = useState(false)
+  const [showVerification, setShowVerification] = useState(false)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [verificationCode, setVerificationCode] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState("")
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    storage.setUser({ id: '0', role: 'CLIENT', token: 'stub', name, email })
-    navigate({ to: "/" })
+    setLoading(true)
+    setErrorMsg("")
+
+    try {
+      if (showVerification) {
+        const res = await fetch('/api/auth/verify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, token: verificationCode }),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) throw new Error(data.message || 'Verification failed')
+
+        setShowVerification(false)
+        setIsLogin(true)
+        setErrorMsg('Email verified! Please sign in.')
+        return
+      }
+
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
+      const body = isLogin
+        ? { email, password }
+        : { email, password, firstName, lastName, phone: '0000000000' }
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.message || 'Something went wrong')
+
+      if (isLogin) {
+        storage.setUser({
+          id: data.user.id,
+          name: `${data.user.firstName || ''} ${data.user.lastName || ''}`.trim() || data.user.email,
+          email: data.user.email,
+          role: data.user.role,
+          token: data.accessToken,
+          refreshToken: data.refreshToken,
+        })
+        navigate({ to: '/' })
+      } else {
+        setShowVerification(true)
+        setErrorMsg('Account created! Check your email for a 6-digit verification code.')
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleResendCode() {
+    setLoading(true)
+    setErrorMsg("")
+
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.message || 'Failed to resend code')
+
+      setErrorMsg('Verification code resent! Check your email.')
+    } catch (err: any) {
+      setErrorMsg(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -34,51 +116,90 @@ export default function Signup() {
 
           <AuthCard>
             <h1 className="text-2xl sm:text-3xl font-bold text-center mb-2">
-              Get Started
+              {showVerification ? 'Verify Email' : isLogin ? 'Welcome Back' : 'Get Started'}
             </h1>
             <p className="text-center text-sm text-[#EBF2FC] mb-6">
-              Turn your event dreams into a seamless reality.
+              {showVerification 
+                ? 'Enter the 6-digit code sent to your email.' 
+                : isLogin ? 'Sign in to your account.' : 'Turn your event dreams into a seamless reality.'}
             </p>
 
             <form className="space-y-4" onSubmit={handleSubmit}>
-              <AuthInput
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <AuthInput
-                type="email"
-                placeholder="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <AuthInput
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              {showVerification ? (
+                <>
+                  <AuthInput
+                    type="text"
+                    placeholder="Enter 6-digit code"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    maxLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleResendCode}
+                    className="text-sm text-blue-400 underline"
+                    disabled={loading}
+                  >
+                    Resend Code
+                  </button>
+                </>
+              ) : (
+                <>
+                  {!isLogin && (
+                    <>
+                      <AuthInput
+                        placeholder="First Name"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                      />
+                      <AuthInput
+                        placeholder="Last Name"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                      />
+                    </>
+                  )}
+                  <AuthInput
+                    type="email"
+                    placeholder="Email Address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <AuthInput
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </>
+              )}
 
-              <AuthButton>Sign Up</AuthButton>
+              {errorMsg && (
+                <p className="text-sm text-red-300 bg-red-900/30 p-2 rounded-lg">{errorMsg}</p>
+              )}
+
+              <AuthButton>{loading ? 'Please wait...' : showVerification ? 'Verify Email' : isLogin ? 'Sign In' : 'Sign Up'}</AuthButton>
             </form>
 
-            {/* Divider */}
-            <div className="flex items-center gap-4 my-6">
-              <div className="flex-1 h-[1px] bg-gray-400/40"></div>
-              <span className="text-sm text-gray-300">or</span>
-              <div className="flex-1 h-[1px] bg-gray-400/40"></div>
-            </div>
-
-            <AuthButton variant="google">
-              <img src="/google-logo.png" className="h-5" />
-              Sign up with Google
-            </AuthButton>
-
             <p className="text-center text-sm text-[#EBF2FC] mt-6">
-              Have an account?{" "}
-              <span className="text-blue-400 cursor-pointer">
-                Sign in
-              </span>
+              {showVerification ? (
+                <span
+                  className="text-blue-400 cursor-pointer underline"
+                  onClick={() => { setShowVerification(false); setIsLogin(false); setErrorMsg('') }}
+                >
+                  Back to Sign Up
+                </span>
+              ) : (
+                <>
+                  {isLogin ? "Don't have an account? " : 'Have an account? '}
+                  <span
+                    className="text-blue-400 cursor-pointer underline"
+                    onClick={() => { setIsLogin(!isLogin); setErrorMsg('') }}
+                  >
+                    {isLogin ? 'Sign up' : 'Sign in'}
+                  </span>
+                </>
+              )}
             </p>
           </AuthCard>
 
@@ -87,26 +208,19 @@ export default function Signup() {
             <span className="text-gray-700">
               © {new Date().getFullYear()} Peculiar
             </span>
-            <span className="text-blue-500 cursor-pointer">
-              Need help?
-            </span>
           </div>
         </div>
 
         {/* RIGHT */}
         <div className="flex-1 hidden md:flex flex-col justify-center">
           <h2 className="text-3xl md:text-5xl font-semibold text-[#3A2256] mb-3">
-            Dont wait, to Start
+            Don't wait, to Start
           </h2>
-
           <p className="text-[#3A2256] text-sm font-semibold mb-10 max-w-sm">
             Planning your event in a much <br /> easier way with Peculiar
           </p>
-
-          <img src="/carriage.png" className="w-64 md:w-80 lg:w-96" />
         </div>
       </div>
     </div>
   )
 }
-

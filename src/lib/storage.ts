@@ -6,6 +6,7 @@ export type AuthUser = {
   email: string
   role: string
   token: string
+  refreshToken?: string
 }
 
 export const storage = {
