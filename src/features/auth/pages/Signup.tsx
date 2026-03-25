@@ -5,6 +5,8 @@ import AuthButton from "../components/AuthButton"
 import AuthCard from "../components/AuthCard"
 import { storage } from "../../../lib/storage"
 
+const API_BASE = 'https://peculiar-webapp-backend.onrender.com'
+
 export default function Signup() {
   const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(false)
@@ -24,7 +26,7 @@ export default function Signup() {
 
     try {
       if (showVerification) {
-        const res = await fetch('/api/auth/verify-email', {
+        const res = await fetch(`${API_BASE}/api/auth/verify-email`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, token: verificationCode }),
@@ -40,10 +42,10 @@ export default function Signup() {
         return
       }
 
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
+      const endpoint = isLogin ? `${API_BASE}/api/auth/login` : `${API_BASE}/api/auth/register`
       const body = isLogin
         ? { email, password }
-        : { email, password, firstName, lastName, phone: '0000000000' }
+        : { email, password, firstName, lastName, phone: '+2340000000000' }
 
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -81,7 +83,7 @@ export default function Signup() {
     setErrorMsg("")
 
     try {
-      const res = await fetch('/api/auth/resend-verification', {
+      const res = await fetch(`${API_BASE}/api/auth/resend-verification`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
