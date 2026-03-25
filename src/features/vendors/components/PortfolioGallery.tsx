@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, ImagePlus, Loader2 } from 'lucide-react';
 import { api } from '../../../lib/api';
@@ -12,6 +12,17 @@ export default function PortfolioGallery() {
   const [images, setImages] = useState<PortfolioImage[]>([]);
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch existing portfolio images on mount
+  useEffect(() => {
+    api.get<{ portfolioUrls: string[] }>('/vendors/profile')
+      .then((vendor) => {
+        if (vendor.portfolioUrls) {
+          setImages(vendor.portfolioUrls.map((url) => ({ url })));
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -71,9 +82,13 @@ export default function PortfolioGallery() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleRemove = (url: string) => {
-    // TODO: Call DELETE endpoint when available
-    setImages((prev) => prev.filter((img) => img.url !== url));
+  const handleRemove = async (url: string) => {
+    try {
+      await api.delete('/vendors/portfolio', { url });
+      setImages((prev) => prev.filter((img) => img.url !== url));
+    } catch (error: any) {
+      setErrorMsg(error.message || 'Failed to delete image');
+    }
   };
 
   return (
