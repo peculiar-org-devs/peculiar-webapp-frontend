@@ -10,6 +10,7 @@ import Header from './components/Header'
 import * as TanStackQueryProvider from './integrations/tanstack-query/root-provider'
 import SplashCarousel from './components/SplashCarousel'
 import Signup from './features/auth/pages/Signup'
+import Waitlist from './features/waitlist/pages/Waitlist'
 import VendorOnboarding from './features/vendors/pages/VendorOnboarding'
 import VendorDashboard from './features/vendors/pages/VendorDashboard'
 import Marketplace from './features/marketplace/pages/Marketplace'
@@ -25,7 +26,7 @@ const rootRoute = createRootRoute({
     })
 
     const hideHeader =
-      pathname.startsWith('/signup') || pathname.startsWith('/signin') || pathname.startsWith('/vendor/onboarding')
+      pathname.startsWith('/signup') || pathname.startsWith('/signin') || pathname.startsWith('/vendor/onboarding') || pathname.startsWith('/waitlist')
 
     return (
       <>
@@ -58,6 +59,12 @@ const loginRoute = createRoute({
     }
   },
   component: Signup,
+})
+// Waitlist Route — public route
+const waitlistRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/waitlist',
+  component: Waitlist,
 })
 
 // Vendor Onboarding — requires authentication
@@ -117,6 +124,7 @@ const bookingsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
+  waitlistRoute,
   vendorOnboardingRoute,
   vendorDashboardRoute,
   marketplaceRoute,
