@@ -81,7 +81,7 @@ export default function Waitlist() {
         </div>
 
         {/* FOOTER */}
-        <Footer />
+        <Footer  />
       </div>
       {/* MODAL */}
       {showModal && <WaitlistModal onClose={() => setShowModal(false)} />}
