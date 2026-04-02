@@ -96,7 +96,7 @@ export default function Navbar() {
       
       {/* MOBILE MENU (HALF SCREEN) */}
       <div
-        className={`fixed top-0 left-0 right-0 mx-4 h-2/6 bg-white z-50 transform transition-transform duration-300 rounded-lg ${
+        className={`fixed top-0 left-0 right-0 mx-4 h-auto bg-white z-50 transform transition-transform duration-300 rounded-lg ${
           menuOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
         role="navigation"
