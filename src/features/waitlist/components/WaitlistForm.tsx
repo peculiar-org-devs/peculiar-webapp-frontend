@@ -67,7 +67,7 @@ export default function WaitlistForm({
   }
 
   return (
-    <div className="w-full max-w-md mt-8 mb-40 space-y-4">
+    <div className="w-full max-w-md mt-8 mb-20 space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
         
         <input

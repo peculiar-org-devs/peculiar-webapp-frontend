@@ -18,6 +18,11 @@ import VendorProfilePage from './features/marketplace/pages/VendorProfilePage'
 import MyBookings from './features/bookings/pages/MyBookings'
 import MyEvents from './features/events/pages/MyEvents'
 import ProfileEdit from './features/profile/pages/ProfileEdit'
+import { waitlistLayout } from './components/waitlistLayout'
+import { HowItWorks }  from './features/navlinks/platform/pages/howItWorks'
+import { ForClients } from './features/navlinks/platform/pages/forClients'
+import { ForVendors } from './features/navlinks/platform/pages/forVendors'
+import { Privacy } from './features/navlinks/platform/pages/privacy'
 import { storage } from './lib/storage'
 
 // Root Route
@@ -28,7 +33,11 @@ const rootRoute = createRootRoute({
     })
 
     const hideHeader =
-      pathname.startsWith('/signup') || pathname.startsWith('/signin') || pathname.startsWith('/vendor/onboarding') || pathname.startsWith('/waitlist')
+      pathname.startsWith('/signup') || 
+      pathname.startsWith('/signin') || 
+      pathname.startsWith('/vendor/onboarding') || 
+      pathname.startsWith('/waitlist') ||
+      pathname.startsWith('/platform')
 
     return (
       <>
@@ -38,6 +47,9 @@ const rootRoute = createRootRoute({
     )
   },
 })
+
+
+
 
 // Home Route — requires authentication
 const indexRoute = createRoute({
@@ -62,12 +74,7 @@ const loginRoute = createRoute({
   },
   component: Signup,
 })
-// Waitlist Route — public route
-const waitlistRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/waitlist',
-  component: Waitlist,
-})
+
 
 // Vendor Onboarding — requires authentication
 const vendorOnboardingRoute = createRoute({
@@ -146,11 +153,60 @@ const profileEditRoute = createRoute({
   component: ProfileEdit,
 })
 
+
+// Waitlist Route — public route
+const waitlistLayoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'waitlist-layout',
+  component: waitlistLayout
+})
+
+
+const waitlistRoute = createRoute({
+  getParentRoute: () => waitlistLayoutRoute,
+  path: '/waitlist',
+  component: Waitlist,
+})
+
+// Nav - Platform links
+const howItWorksRoute = createRoute({
+  getParentRoute: () => waitlistLayoutRoute,
+  path: '/platform/how-it-works',
+  component: HowItWorks,
+})
+
+const forVendorsRoute = createRoute({
+  getParentRoute: () => waitlistLayoutRoute,
+  path: '/platform/for-vendors',
+  component: ForVendors
+})
+
+const forClientsRoute = createRoute({
+  getParentRoute: () => waitlistLayoutRoute,
+  path: '/platform/for-clients',
+  component: ForClients
+})
+
+const privacyRoute = createRoute({
+  getParentRoute: () => waitlistLayoutRoute,
+  path: '/platform/privacy',
+  component: Privacy,
+})
+
+
 // ✅ Route Tree
+
+const waitlistLayoutTree = waitlistLayoutRoute.addChildren([
+  howItWorksRoute,
+  forVendorsRoute,
+  forClientsRoute,
+  waitlistRoute,
+  privacyRoute
+])
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
-  waitlistRoute,
   vendorOnboardingRoute,
   vendorDashboardRoute,
   marketplaceRoute,
@@ -158,7 +214,9 @@ const routeTree = rootRoute.addChildren([
   bookingsRoute,
   myEventsRoute,
   profileEditRoute,
+  waitlistLayoutTree
 ])
+
 
 // React Query Context
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()

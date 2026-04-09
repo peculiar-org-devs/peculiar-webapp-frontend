@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <div className="relative z-10 bg-black text-white px-6 py-15 mt-auto">
+    <div className="relative bottom-0 z-10 bg-black text-white px-6 py-15 mt-auto">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm border-b pb-15 pt-5">
         <div className="flex items-center gap-2 mr-10">
           <img src="/logo-purple.png" className="h-5" alt="Peculiar logo" />
