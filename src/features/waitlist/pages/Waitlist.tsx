@@ -63,7 +63,10 @@ export default function Waitlist() {
           </div>
 
           {/* FORM */}
-          <div className="flex-1 flex flex-col items-center justify-center">
+          <div 
+            className="flex-1 flex flex-col items-center justify-center cursor-pointer"
+            onClick={() => window.location.href = 'https://tally.so/r/68OZkJ'}
+          >
             <WaitlistForm onSuccess={() => setShowModal(true)} />
           </div>
 
