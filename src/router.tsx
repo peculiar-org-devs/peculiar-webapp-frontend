@@ -45,7 +45,7 @@ const indexRoute = createRoute({
   path: '/',
   beforeLoad: () => {
     if (!storage.isAuthenticated()) {
-      throw redirect({ to: '/signup' })
+      throw redirect({ to: '/waitlist' })
     }
   },
   component: SplashCarousel,
